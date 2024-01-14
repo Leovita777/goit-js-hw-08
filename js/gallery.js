@@ -64,48 +64,61 @@ const images = [
   },
 ];
 
-const listGallery = document.querySelector(".gallery");
+const galleryContainer = document.querySelector(".gallery");
 
-const images = [];
+function createGallery(imagesArray) {
+  const galleryItems = imagesArray.map((image) => {
+    const li = document.createElement("li");
+    li.classList.add("gallery-item");
 
-function imagetTemplate(item) {
-  return;
-  `<li class="gallery-item">
-    <a
-      class="gallery-link"
-      href="${item.imgLarge}"
-    >
-      <img
-        class="gallery-image"
-        src="${item.img}"
-        data-source="${item.imgLarge}"
-        alt="${item.description}"
-      />
-    </a>
-  </li>`;
+    const a = document.createElement("a");
+    a.classList.add("gallery-link");
+    a.href = image.original;
+
+    const img = document.createElement("img");
+    img.classList.add("gallery-image");
+    img.src = image.preview;
+    img.alt = image.description;
+    img.dataset.source = image.original;
+
+    a.appendChild(img);
+    li.appendChild(a);
+    return li;
+  });
+  galleryContainer.append(...galleryItems);
 }
 
-function imageListTemplate(images) {
-  const markup = images.map(imagetTemplate).join();
-  return markup;
+createGallery(images);
+galleryContainer.addEventListener("click", onGalleryItemClick);
+
+function onGalleryItemClick(event) {
+  event.preventDefault();
+
+  if (event.target.nodeName !== "IMG") {
+    return;
+  }
+
+  const largeImageURL = event.target.dataset.source;
+  const largeAlt = event.target.alt;
+
+  const instance = basicLightbox.create(
+    `<img src="${largeImageURL}" class="largeImage" alt="${largeAlt}">`,
+    {
+      onShow: (instance) => {
+        const onKeyUp = (event) => {
+          if (event.code === "Escape") {
+            instance.close();
+          }
+        };
+
+        document.addEventListener("keyup", onKeyUp);
+        instance.__onKeyUp = onKeyUp;
+      },
+      onClose: (instance) => {
+        document.removeEventListener("keyup", instance.__onKeyUp);
+      },
+    }
+  );
+
+  instance.show();
 }
-
-function render() {
-    const imageListTemplate(images);
-    listGallery.innerHTML = markup;
-}
-
-imageListTemplate(images);
-
-
-
-const instance = basicLightbox.create(`
-    <div class="modal">
-        <p>
-            Your first lightbox with just a few lines of code.
-            Yes, it's really that simple.
-        </p>
-    </div>
-`);
-
-instance.show();
