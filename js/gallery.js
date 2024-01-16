@@ -85,7 +85,13 @@ function createGallery(imagesArray) {
     li.appendChild(a);
     return li;
   });
-  galleryContainer.append(...galleryItems);
+
+  const galleryFragment = document.createDocumentFragment();
+  galleryItems.forEach((item) => {
+    galleryFragment.appendChild(item);
+  });
+
+  galleryContainer.appendChild(galleryFragment);
 }
 
 createGallery(images);
@@ -102,7 +108,7 @@ function onGalleryItemClick(event) {
   const largeAlt = event.target.alt;
 
   const instance = basicLightbox.create(
-    `<img src="${largeImageURL}" class="largeImage" alt="${largeAlt}">`,
+    `<img src="${largeImageURL}" class="large-image" alt="${largeAlt}">`,
     {
       onShow: (instance) => {
         const onKeyUp = (event) => {
@@ -112,10 +118,9 @@ function onGalleryItemClick(event) {
         };
 
         document.addEventListener("keyup", onKeyUp);
-        instance.__onKeyUp = onKeyUp;
-      },
-      onClose: (instance) => {
-        document.removeEventListener("keyup", instance.__onKeyUp);
+        instance.onClose = () => {
+          document.removeEventListener("keyup", onKeyUp);
+        };
       },
     }
   );
